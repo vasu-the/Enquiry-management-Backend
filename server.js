@@ -5,11 +5,6 @@ const cors = require("cors");
 const morgan = require("morgan");
 const app = express();
 // app.use("/uploads", express.static("uploads"));
-// const path = require('path');
-// app.get('/download/:filename', (req, res) => {
-//   const file = path.join(__dirname, 'uploads', req.params.filename);
-//   res.download(file);
-// });
 
 
 const PORT = process.env.PORT;

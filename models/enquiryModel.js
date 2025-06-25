@@ -5,7 +5,12 @@ const enquirySchema = new mongoose.Schema({
   title: String,
   description: String,
   category: { type: String, enum: ['feedback', 'issues', 'feature requests'] },
-  fileUrl: String,
+   file: {
+    filename: String,
+    path: String,
+    mimetype: String,
+    size: Number,
+  },
   createdAt: { type: Date, default: Date.now }
 });
 

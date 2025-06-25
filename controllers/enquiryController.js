@@ -1,27 +1,39 @@
-const Enquiry = require('../models/enquiryModel');
+// controllers/enquiryController.js
+const Enquiry = require("../models/enquiryModel");
 
 exports.createEnquiry = async (req, res) => {
   try {
-    const { title, description, category } = req.body;
-    const file = req.file;
+    const { title, description, category, userId } = req.body;
 
-    if (!title || !category || !file) {
-      return res.status(400).json({ message: 'Missing required fields' });
+    if (!title || !category || !userId) {
+      return res.status(400).json({ message: "Missing required fields." });
     }
 
+    const fileData = req.file
+      ? {
+          filename: req.file.filename,
+          path: req.file.path,
+          mimetype: req.file.mimetype,
+          size: req.file.size,
+        }
+      : null;
 
-    const enquiry = new Enquiry({
-      userId: req.user.userId,
+    const newEnquiry = new Enquiry({
       title,
       description,
       category,
-      fileUrl: file.filename,
+      userId,
+      file: fileData,
     });
 
-    await enquiry.save();
-    return res.status(201).json({ data: enquiry, message: 'Enquiry submitted' });
-  } catch (error) {
-    console.error('Enquiry submission error:', error);
-    return res.status(500).json({ error: error.message, message: 'Failed to submit enquiry' });
+    await newEnquiry.save();
+
+    return res.status(201).json({
+      message: "Enquiry submitted and saved successfully.",
+      enquiry: newEnquiry,
+    });
+  } catch (err) {
+    console.error("Error saving enquiry:", err);
+    return res.status(500).json({ message: "Server error. Please try again." });
   }
 };
