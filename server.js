@@ -4,12 +4,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const morgan = require("morgan");
 const app = express();
-app.use("/uploads", express.static("uploads"));
-const path = require('path');
-app.get('/download/:filename', (req, res) => {
-  const file = path.join(__dirname, 'uploads', req.params.filename);
-  res.download(file);
-});
+
 
 
 const PORT = process.env.PORT;
@@ -25,7 +20,11 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTION'],
   allowedHeaders: ['Authorization', 'Content-Type']
 }));
-
+app.use((err, req, res, next) => {
+  console.error("🔥 Global error handler caught:", err.message);
+  console.dir(err, { depth: null });
+  res.status(500).json({ error: 'Unhandled server error', message: err.message });
+});
 //Routes
 app.use('/api/user', require('./routes/userRoute'));
 app.use('/api', require('./routes/enquiryRoute'));

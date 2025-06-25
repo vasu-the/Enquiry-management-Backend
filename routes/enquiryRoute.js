@@ -1,16 +1,25 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../middlewares/uploadMiddleware");
 const auth = require('../middlewares/authMiddleware');
+const upload = require('../middlewares/upload');
 const enquiryController = require('../controllers/enquiryController');
-router.post("/enquiries", auth, upload, enquiryController.createEnquiry, async (req, res) => {
-  try {
-    console.log("Uploaded file:", req.file);
-    res.status(200).json({ message: "Enquiry submitted successfully!" });
-  } catch (error) {
-    console.error("Error uploading file:", error);
-    res.status(500).json({ message: "File upload failed." });
-  }
-});
+
+router.post(
+  '/enquiries',
+  (req, res, next) => { console.log("Middleware: starting auth"); next(); },
+  auth,
+  (req, res, next) => { console.log("Middleware: starting upload"); next(); },
+  (req, res, next) => {
+    upload.single('file')(req, res, function (err) {
+      if (err) {
+        console.error("Multer/Cloudinary error:", err.message);
+        return res.status(400).json({ error: 'Upload failed', message: err.message });
+      }
+      next();
+    });
+  },
+  (req, res, next) => { console.log("Middleware: before controller"); next(); },
+  enquiryController.createEnquiry
+);
 
 module.exports = router;

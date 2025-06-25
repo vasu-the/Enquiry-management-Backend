@@ -6,6 +6,6 @@ const userSchema = new mongoose.Schema({
   password: String,
   createdAt: { type: Date, default: Date.now },
   isActive: { type: Boolean, default: true }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

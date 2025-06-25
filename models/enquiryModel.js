@@ -1,12 +1,11 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const enquirySchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  title: String,
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  title: { type: String, required: true },
   description: String,
-  category: { type: String, enum: ['feedback', 'issues', 'feature requests'] },
+  category: { type: String, required: true },
   fileUrl: String,
-  createdAt: { type: Date, default: Date.now }
-});
+}, { timestamps: true });
 
-module.exports = mongoose.model('Enquiry', enquirySchema);
+module.exports = mongoose.model("Enquiry", enquirySchema);

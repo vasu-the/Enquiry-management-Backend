@@ -1,49 +1,51 @@
-// controllers/enquiryController.js
-
-const Enquiry = require("../models/enquiryModel");
-const fs = require("fs");
+const Enquiry = require('../models/enquiryModel');
 
 exports.createEnquiry = async (req, res) => {
   try {
-    const file = req.file;
-    const { title, description, category } = req.body;
+    console.log("Authenticated user:", req.user);
+    console.log(" Request body:", req.body);
+    console.log(" Uploaded file:", req.file);
 
-    // Validate required fields
-    if (!title || !category || !file) {
-      if (file?.path) fs.unlinkSync(file.path);
-      return res.status(400).json({
-        message: "Missing required fields: title, category, or file",
-      });
+    const { title, description, category } = req.body;
+    const userId = req.user?._id;
+
+    if (!userId) {
+      console.error(" No user ID found in request");
+      return res.status(401).json({ error: "Unauthorized: No user" });
     }
 
-    const enquiry = new Enquiry({
-      userId: req.user.userId,
+    const fileUrl = req.file?.path;
+    console.log(" Cloudinary file URL:", fileUrl);
+
+    const newEnquiry = new Enquiry({
+      userId,
       title,
       description,
       category,
-      fileUrl: file.filename, // optionally: `/uploads/${file.filename}`
+      fileUrl,
     });
 
-    await enquiry.save();
+    console.log(" Saving Enquiry object:", newEnquiry);
 
-    return res.status(201).json({
-      message: "Enquiry submitted successfully",
-      data: enquiry,
-    });
+    const savedEnquiry = await newEnquiry.save();
+    console.log(" Enquiry saved:", savedEnquiry);
+
+    res.status(201).json(savedEnquiry);
   } catch (error) {
-    console.error("Enquiry submission error:", error);
+    console.error(" Error while creating enquiry:");
 
-    if (req.file?.path) {
-      try {
-        fs.unlinkSync(req.file.path); // Cleanup failed upload
-      } catch (cleanupError) {
-        console.error("File cleanup error:", cleanupError.message);
-      }
+    try {
+      console.error("error.message:", error.message);
+      console.error(" error.stack:", error.stack);
+      console.error(" Full error JSON:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+    } catch (err) {
+      console.error("Failed to stringify error, using console.dir");
+      console.dir(error, { depth: null });
     }
 
-    return res.status(500).json({
-      message: "Failed to submit enquiry",
-      error: error.message,
+    res.status(500).json({
+      error: 'Failed to create enquiry',
+      message: error.message || 'Unknown error',
     });
   }
 };
