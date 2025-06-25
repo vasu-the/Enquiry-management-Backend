@@ -1,18 +1,18 @@
+// middlewares/enquiryUpload.js
+
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// Define storage strategy
+// Define storage destination and filename strategy
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, "../uploads");
 
-    // Ensure 'uploads' directory exists
     if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true }); // Use recursive for nested folders
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
 
-    console.log("Upload directory:", uploadDir);
     cb(null, uploadDir);
   },
 
@@ -20,12 +20,11 @@ const storage = multer.diskStorage({
     const timestamp = Date.now();
     const random = Math.round(Math.random() * 1e9);
     const uniqueName = `${timestamp}-${random}-${file.originalname}`;
-
-    console.log("Uploading file with name:", uniqueName);
     cb(null, uniqueName);
   },
 });
 
+// File validation
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /pdf|docx|jpg|jpeg|png/;
   const extname = path.extname(file.originalname).toLowerCase();
@@ -33,18 +32,13 @@ const fileFilter = (req, file, cb) => {
   if (allowedTypes.test(extname)) {
     cb(null, true);
   } else {
-    cb(new Error("Only PDF, DOCX, JPG, PNG files are allowed"));
+    cb(new Error("Only PDF, DOCX, JPG, JPEG, PNG files are allowed"));
   }
 };
 
-const limits = {
-  fileSize: 5 * 1024 * 1024, // 5MB
-};
+// File size limit: 5MB
+const limits = { fileSize: 5 * 1024 * 1024 };
 
-const upload = multer({
-  storage,
-  limits,
-  fileFilter,
-});
+const upload = multer({ storage, fileFilter, limits });
 
-module.exports = upload;
+module.exports = upload.single("file");

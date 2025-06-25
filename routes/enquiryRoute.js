@@ -3,7 +3,7 @@ const router = express.Router();
 const upload = require("../middlewares/uploadMiddleware");
 const auth = require('../middlewares/authMiddleware');
 const enquiryController = require('../controllers/enquiryController');
-router.post("/enquiries", auth, upload.single("file"), enquiryController.createEnquiry, async (req, res) => {
+router.post("/enquiries", auth, upload, enquiryController.createEnquiry, async (req, res) => {
   try {
     console.log("Uploaded file:", req.file);
     res.status(200).json({ message: "Enquiry submitted successfully!" });
@@ -12,5 +12,5 @@ router.post("/enquiries", auth, upload.single("file"), enquiryController.createE
     res.status(500).json({ message: "File upload failed." });
   }
 });
-router.get('/enquiry-cache', enquiryController.getCachedEnquiries);
+
 module.exports = router;

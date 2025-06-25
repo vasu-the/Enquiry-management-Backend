@@ -1,46 +1,49 @@
-const Enquiry = require('../models/enquiryModel');
+// controllers/enquiryController.js
 
-// In-memory local cache for enquiries
-const enquiryCache = [];
+const Enquiry = require("../models/enquiryModel");
+const fs = require("fs");
 
 exports.createEnquiry = async (req, res) => {
   try {
-    const { title, description, category } = req.body;
     const file = req.file;
+    const { title, description, category } = req.body;
 
+    // Validate required fields
     if (!title || !category || !file) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      if (file?.path) fs.unlinkSync(file.path);
+      return res.status(400).json({
+        message: "Missing required fields: title, category, or file",
+      });
     }
 
-    // Create enquiry in DB
     const enquiry = new Enquiry({
       userId: req.user.userId,
       title,
       description,
       category,
-      fileUrl: file.filename,
+      fileUrl: file.filename, // optionally: `/uploads/${file.filename}`
     });
 
     await enquiry.save();
 
-    // Add to in-memory cache
-    enquiryCache.push({
-      id: enquiry._id,
-      userId: enquiry.userId,
-      title: enquiry.title,
-      description: enquiry.description,
-      category: enquiry.category,
-      fileUrl: enquiry.fileUrl,
+    return res.status(201).json({
+      message: "Enquiry submitted successfully",
+      data: enquiry,
     });
-
-    return res.status(201).json({ data: enquiry, message: 'Enquiry submitted' });
   } catch (error) {
-    console.error('Enquiry submission error:', error);
-    return res.status(500).json({ error: error.message, message: 'Failed to submit enquiry' });
-  }
-};
+    console.error("Enquiry submission error:", error);
 
-// Optional: function to get cached enquiries (for testing/debugging)
-exports.getCachedEnquiries = (req, res) => {
-  return res.status(200).json({ data: enquiryCache });
+    if (req.file?.path) {
+      try {
+        fs.unlinkSync(req.file.path); // Cleanup failed upload
+      } catch (cleanupError) {
+        console.error("File cleanup error:", cleanupError.message);
+      }
+    }
+
+    return res.status(500).json({
+      message: "Failed to submit enquiry",
+      error: error.message,
+    });
+  }
 };
