@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 require("dotenv").config();
 mongoose.set("strictQuery", false)
-mongoose.set('bufferCommands', false);
+
 mongoose.connect(process.env.MONGODBURL,
   {
     useNewUrlParser: true,
