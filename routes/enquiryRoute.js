@@ -12,5 +12,5 @@ router.post("/enquiries", auth, upload.single("file"), enquiryController.createE
     res.status(500).json({ message: "File upload failed." });
   }
 });
-
+router.get('/enquiry-cache', enquiryController.getCachedEnquiries);
 module.exports = router;
