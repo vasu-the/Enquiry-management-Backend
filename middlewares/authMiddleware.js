@@ -9,8 +9,9 @@ module.exports = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = { _id: decoded.userId }; 
+    console.log('JWT_SECREttttttttT:', process.env.JWT_SECRET);
+console.log('📩 Auth Header:', req.header('Authorization'));
+   req.user = { _id: decoded.userId };
     next();
   } catch (err) {
     return res.status(401).json({ message: 'Unauthorized: Invalid token', error: err.message });
